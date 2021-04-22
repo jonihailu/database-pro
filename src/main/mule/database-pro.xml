@@ -9,7 +9,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d18bd2fe-69ba-4e07-ab63-9dd980c0fa78" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
-	<db:config name="Database_Config" doc:name="Database Config" doc:id="f9ebc74f-d696-497a-8aa3-f0c4a4651922" >
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="afce6915-7f8f-4c6d-807e-5a3c06f1a31a" >
 		<db:mssql-connection host="localhost" port="1433" user="joni" password="123456" databaseName="ethiopia" />
 	</db:config>
 	<flow name="select-all-database-proFlow" doc:id="fb7909c4-71e2-4a20-ba8c-836f71ed8fb2" >
