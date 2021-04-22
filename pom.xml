@@ -29,9 +29,14 @@
 				<artifactId>mule-maven-plugin</artifactId>
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
-				
 				<configuration>
-                    <cloudHubDeployment>
+                <sharedLibraries>
+                        <sharedLibrary>
+                            <groupId>com.microsoft.sqlserver</groupId>
+                            <artifactId>mssql-jdbc</artifactId>
+                        </sharedLibrary>
+                    </sharedLibraries>
+                       <cloudHubDeployment>
 					     <uri>https://anypoint.mulesoft.com</uri>
 					     <muleVersion>4.3.0</muleVersion>
 					     <username>johnimike2021</username>
@@ -42,12 +47,6 @@
 				         <workerType>Micro</workerType>
 				         <ObjectStoreV2>True</ObjectStoreV2>
                    </cloudHubDeployment>
-                <sharedLibraries>
-                        <sharedLibrary>
-                            <groupId>com.microsoft.sqlserver</groupId>
-                            <artifactId>mssql-jdbc</artifactId>
-                        </sharedLibrary>
-                    </sharedLibraries>
                 </configuration>
 			</plugin>
 		</plugins>
