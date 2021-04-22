@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d18bd2fe-69ba-4e07-ab63-9dd980c0fa78" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="0824e01c-a1b0-42e2-b5cb-97c8ea57883a" >
+		<db:mssql-connection host="localhost" port="1433" user="joni" password="123456" databaseName="ethiopia" />
+	</db:config>
+	<flow name="select-all-database-proFlow" doc:id="fb7909c4-71e2-4a20-ba8c-836f71ed8fb2" >
+		<http:listener doc:name="selectall-Listener" doc:id="2bdf8696-f577-4481-8828-b8b43643c872" config-ref="HTTP_Listener_config" path="selectall"/>
+		<db:select doc:name="Select" doc:id="c473dc91-aace-4408-a4d6-d3295b26926c" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from mule1]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="fe9c0fb8-df76-4aa6-846b-b010aaceca77" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id,
+	Fname: payload01.Fname default "",
+	Lname: payload01.Lname default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="1cb3f2ea-dab0-4003-8754-fa098488d07f" message="#[payload]" />
+	</flow>
+	<flow name="select-by-id-database-proFlow" doc:id="35a4bd87-6bcc-49d1-956c-602fd6eaed56" >
+		<http:listener doc:name="selectid-Listener" doc:id="6610ee8c-2294-4bab-9c4f-74cae9737cad" config-ref="HTTP_Listener_config" path="selectid"/>
+		<db:select doc:name="Select" doc:id="4fed0a60-464d-49eb-afcf-2418f0ebe24e" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from mule1 where id=:id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="852a6e40-9654-4d1a-9718-26b2d7da3a12" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id,
+	Fname: payload01.Fname default "",
+	Lname: payload01.Lname default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3020fc9b-343b-4c88-90f8-bf44d8714637" message="#[payload]" />
+	</flow>
+	<flow name="bulk-insert-database-proFlow" doc:id="8a871c02-a024-4bc1-a3a3-5dea1cc5e242" >
+		<http:listener doc:name="bulkinsert-Listener" doc:id="410daba6-451f-446f-af1a-f209e218ff08" config-ref="HTTP_Listener_config" path="bulkinsert"/>
+		<ee:transform doc:name="Transform Message" doc:id="525a505e-aa77-4c35-ab88-5fdf35656ae0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.id,
+	Fname: payload01.Fname,
+	Lname: payload01.Lname
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:bulk-insert doc:name="Bulk insert" doc:id="f52290d1-18e6-4969-94e8-a1a9ea193bf4" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into mule1 (id,Fname,Lname ) values(:id,:Fname,:Lname) ]]></db:sql>
+		</db:bulk-insert>
+		<ee:transform doc:name="Transform Message" doc:id="aac25a86-4255-4a24-baf8-44b39eb473b2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"StatusCode": 201,
+	"Message": "Data successfully inserted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="5f17bbb5-697a-41c3-9f90-5c1efd8ffecf" message="#[payload]" />
+	</flow>
+	<flow name="bulk-update-database-proFlow" doc:id="4ac26b51-a2fc-41a7-b613-54017a586606" >
+		<http:listener doc:name="bulkupdate-Listener" doc:id="cb729350-bcdf-4f53-96d7-5d13fc065f3d" config-ref="HTTP_Listener_config" path="bulkupdate"/>
+		<ee:transform doc:name="Transform Message" doc:id="1d945fc0-10ee-42c4-8169-0376289fa95d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	Fname: payload01.Fname,
+	Lname: payload01.Lname,
+	id: payload01.id
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:bulk-update doc:name="Bulk update" doc:id="07b6ad38-2811-4cd9-83d7-5400554ab2b0" config-ref="Database_Config">
+			<db:sql ><![CDATA[update mule1 set Fname=:Fname,Lname=:Lname where id=:id]]></db:sql>
+		</db:bulk-update>
+		<ee:transform doc:name="Transform Message" doc:id="46e7984e-dbc7-4133-8081-6d93ad98fd4e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"statusCode": 200,
+	"Message": "Record successfully updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="908f462d-7a81-4a46-89f9-20a704ed557e" message="#[payload]" />
+	</flow>
+	<flow name="delete-id-database-proFlow" doc:id="bb6e80d5-1eea-40f6-8476-08a8d827c264" >
+		<http:listener doc:name="deleteid-Listener" doc:id="912ae8e2-e6ef-418e-bba4-e79bf880ab37" config-ref="HTTP_Listener_config" path="deleteid"/>
+		<ee:transform doc:name="Transform Message" doc:id="372948f1-4190-40c5-8302-0ff05139a7db">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:delete doc:name="Delete" doc:id="4ae6cdbf-09cd-47b5-8294-2a3052819b41" config-ref="Database_Config">
+			<db:sql ><![CDATA[delete from mule1 where id=:id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="397639ef-778d-458c-ab09-c599c9b74781" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	statusCode: 203,
+	"Message": "Record successfully deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
